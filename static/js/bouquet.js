@@ -143,4 +143,22 @@ function share() {
         .then(() => alert("Bouquet link copied!"));
 }
 
+// Screenshot & Download Function
+function downloadImage(elementId, filename) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    // Use html2canvas to take the picture
+    html2canvas(element, {
+        backgroundColor: "#fdfbf7", // Matches our app's off-white background perfectly
+        scale: 2 // High resolution (retina display quality)
+    }).then(canvas => {
+        // Create a temporary link to trigger the download
+        const link = document.createElement("a");
+        link.download = filename + ".png";
+        link.href = canvas.toDataURL("image/png");
+        link.click(); // Automatically click it to download
+    });
+}
+
 init();

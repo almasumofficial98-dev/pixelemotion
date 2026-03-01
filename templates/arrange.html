@@ -7,45 +7,66 @@
 <p class="subtitle" style="margin-bottom: 15px;">Click an item to select it, then adjust its size and layer.</p>
 {% endif %}
 
-<div id="canvas">
-    {% for item in items %}
-    <img class="arrange-item {% if not readonly %}draggable{% endif %}"
-         data-id="{{ item.id }}"
-         data-scale="{{ item.scale }}"
-         data-z="{{ item.z_index }}"
-         src="{{ url_for('static', filename='images/' ~ item.id ~ '.png') }}"
-         style="{% if item.x != '' %}left: {{ item.x }}px; top: {{ item.y }}px;{% endif %} transform: scale({{ item.scale }}); z-index: {{ item.z_index }};">
-    {% endfor %}
+<div id="capture-area" style="padding-bottom: 10px;">
+    
+    <div id="canvas">
+        {% for item in items %}
+        <img class="arrange-item {% if not readonly %}draggable{% endif %}"
+             data-id="{{ item.id }}"
+             data-scale="{{ item.scale }}"
+             data-z="{{ item.z_index }}"
+             src="{{ url_for('static', filename='images/' ~ item.id ~ '.png') }}"
+             style="{% if item.x != '' %}left: {{ item.x }}px; top: {{ item.y }}px;{% endif %} transform: scale({{ item.scale }}); z-index: {{ item.z_index }};">
+        {% endfor %}
+    </div>
+
+    {% if not readonly %}
+    <div class="resize-controls" id="resize-panel" style="opacity: 0.4; pointer-events: none;">
+        <div class="control-group">
+            <span class="resize-label">Size:</span>
+            <button class="btn-icon" onclick="adjustSize(-0.2)" aria-label="Decrease Size">➖</button>
+            <button class="btn-icon" onclick="adjustSize(0.2)" aria-label="Increase Size">➕</button>
+        </div>
+        
+        <div class="control-group">
+            <span class="resize-label">Layer:</span>
+            <button class="btn-icon" onclick="adjustZIndex(-1)" aria-label="Move Backward">⬇️</button>
+            <button class="btn-icon" onclick="adjustZIndex(1)" aria-label="Move Forward">⬆️</button>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if message %}
+    <div class="message-card" id="message-area">
+        <p class="message">"{{ message | e }}"</p>
+    </div>
+    {% endif %}
+
 </div>
 
 {% if not readonly %}
-<div class="resize-controls" id="resize-panel" style="opacity: 0.4; pointer-events: none;">
-    <div class="control-group">
-        <span class="resize-label">Size:</span>
-        <button class="btn-icon" onclick="adjustSize(-0.2)" aria-label="Decrease Size">➖</button>
-        <button class="btn-icon" onclick="adjustSize(0.2)" aria-label="Increase Size">➕</button>
-    </div>
-    
-    <div class="control-group">
-        <span class="resize-label">Layer:</span>
-        <button class="btn-icon" onclick="adjustZIndex(-1)" aria-label="Move Backward">⬇️</button>
-        <button class="btn-icon" onclick="adjustZIndex(1)" aria-label="Move Forward">⬆️</button>
-    </div>
+<div class="controls">
+    <button class="btn-secondary" onclick="randomize()">🔀 Scramble</button>
+    <button class="btn-primary" onclick="share()">🔗 Share Bouquet</button>
 </div>
 {% endif %}
 
-<div class="controls">
-    {% if not readonly %}
-        <button class="btn-secondary" onclick="randomize()">🔀 Scramble</button>
-        <button class="btn-primary" onclick="share()">🔗 Share Bouquet</button>
-    {% else %}
-        <a href="{{ url_for('index') }}" class="btn-primary" style="text-decoration: none; display: inline-block;">💐 Create Your Own Bouquet</a>
-    {% endif %}
-</div>
+{% if readonly %}
+<div class="receiver-section">
+    <h3 class="section-title" style="text-align: center; margin-top: 30px; border: none;">Save Your Gift 📸</h3>
+    
+    <div class="controls" style="margin-top: 15px; margin-bottom: 15px;">
+        <button class="btn-secondary" onclick="downloadImage('canvas', 'My_Bouquet')">💐 Bouquet Only</button>
+        
+        {% if message %}
+        <button class="btn-secondary" onclick="downloadImage('message-area', 'My_Message')">💌 Message Only</button>
+        <button class="btn-secondary" onclick="downloadImage('capture-area', 'Bouquet_and_Message')">🎁 Save Both</button>
+        {% endif %}
+    </div>
 
-{% if message %}
-<div class="message-card">
-    <p class="message">"{{ message | e }}"</p>
+    <div class="controls">
+        <a href="{{ url_for('index') }}" class="btn-primary">✨ Create Your Own Bouquet</a>
+    </div>
 </div>
 {% endif %}
 
