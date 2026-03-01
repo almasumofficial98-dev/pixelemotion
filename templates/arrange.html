@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>{% if readonly %}A Special Bouquet For You{% else %}Customize Your Bouquet{% endif %}</h1>
+
+{% if not readonly %}
+<p class="subtitle" style="margin-bottom: 15px;">Click an item to select it, then adjust its size and layer.</p>
+{% endif %}
+
+<div id="canvas">
+    {% for item in items %}
+    <img class="arrange-item {% if not readonly %}draggable{% endif %}"
+         data-id="{{ item.id }}"
+         data-scale="{{ item.scale }}"
+         data-z="{{ item.z_index }}"
+         src="{{ url_for('static', filename='images/' ~ item.id ~ '.png') }}"
+         style="{% if item.x != '' %}left: {{ item.x }}px; top: {{ item.y }}px;{% endif %} transform: scale({{ item.scale }}); z-index: {{ item.z_index }};">
+    {% endfor %}
+</div>
+
+{% if not readonly %}
+<div class="resize-controls" id="resize-panel" style="opacity: 0.4; pointer-events: none;">
+    <div class="control-group">
+        <span class="resize-label">Size:</span>
+        <button class="btn-icon" onclick="adjustSize(-0.2)" aria-label="Decrease Size">➖</button>
+        <button class="btn-icon" onclick="adjustSize(0.2)" aria-label="Increase Size">➕</button>
+    </div>
+    
+    <div class="control-group">
+        <span class="resize-label">Layer:</span>
+        <button class="btn-icon" onclick="adjustZIndex(-1)" aria-label="Move Backward">⬇️</button>
+        <button class="btn-icon" onclick="adjustZIndex(1)" aria-label="Move Forward">⬆️</button>
+    </div>
+</div>
+{% endif %}
+
+<div class="controls">
+    {% if not readonly %}
+        <button class="btn-secondary" onclick="randomize()">🔀 Scramble</button>
+        <button class="btn-primary" onclick="share()">🔗 Share Bouquet</button>
+    {% else %}
+        <a href="{{ url_for('index') }}" class="btn-primary" style="text-decoration: none; display: inline-block;">💐 Create Your Own Bouquet</a>
+    {% endif %}
+</div>
+
+{% if message %}
+<div class="message-card">
+    <p class="message">"{{ message | e }}"</p>
+</div>
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/bouquet.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %} 
+{% block content %}
+
+<div class="header-section">
+  <h1>Craft Your Digital Bouquet</h1>
+  <p class="subtitle">Select up to 15 flowers and leaves to arrange</p>
+</div>
+
+<form method="POST" action="/create" id="bouquetForm">
+  
+  <h2 class="section-title">Flowers</h2>
+  <div class="item-picker">
+    {% for i in range(1, 12) %}
+    <div class="item-card" id="card-f{{i}}">
+      <img src="{{ url_for('static', filename='images/f' ~ i ~ '.png') }}" alt="Flower {{i}}" class="item-img" loading="lazy" />
+      <div class="qty-controls">
+        <button type="button" class="qty-btn minus" onclick="updateItem('f{{i}}', -1)" aria-label="Decrease quantity">−</button>
+        <span class="qty-display" id="qty-f{{i}}">0</span>
+        <button type="button" class="qty-btn plus" onclick="updateItem('f{{i}}', 1)" aria-label="Increase quantity">+</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2 class="section-title">Leaves & Fillers</h2>
+  <div class="item-picker">
+    {% for i in range(1, 5) %}
+    <div class="item-card" id="card-L{{i}}">
+      <img src="{{ url_for('static', filename='images/L' ~ i ~ '.png') }}" alt="Leaf {{i}}" class="item-img" loading="lazy" />
+      <div class="qty-controls">
+        <button type="button" class="qty-btn minus" onclick="updateItem('L{{i}}', -1)" aria-label="Decrease quantity">−</button>
+        <span class="qty-display" id="qty-L{{i}}">0</span>
+        <button type="button" class="qty-btn plus" onclick="updateItem('L{{i}}', 1)" aria-label="Increase quantity">+</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="status-bar">
+    <p id="count" class="counter">0 / 15 items selected</p>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <div class="message-section">
+    <textarea name="message" placeholder="Add a heartfelt message to accompany your bouquet..." aria-label="Bouquet message"></textarea>
+  </div>
+
+  <div id="hiddenItems"></div>
+
+  <button type="submit" class="submit-btn" id="submitBtn" disabled>
+    Continue to Arrangement ➔
+  </button>
+</form>
+
+<script>
+  const selectedCounts = {};
+  let totalItems = 0;
+  const maxItems = 15;
+
+  const flowerIds = Array.from({length: 11}, (_, i) => 'f' + (i + 1));
+  const leafIds = Array.from({length: 4}, (_, i) => 'L' + (i + 1));
+  const allItemIds = [...flowerIds, ...leafIds];
+
+  function updateItem(itemId, delta) {
+    let currentCount = selectedCounts[itemId] || 0;
+    let newCount = currentCount + delta;
+
+    if (newCount < 0) newCount = 0;
+
+    let countDiff = newCount - currentCount;
+    if (totalItems + countDiff > maxItems) {
+      alert("Your bouquet is full! You can only pick up to 15 items total.");
+      return;
+    }
+
+    selectedCounts[itemId] = newCount;
+    totalItems += countDiff;
+    renderUI();
+  }
+
+  function renderUI() {
+    const hiddenContainer = document.getElementById("hiddenItems");
+    hiddenContainer.innerHTML = ""; 
+
+    allItemIds.forEach(itemId => {
+      let count = selectedCounts[itemId] || 0;
+      
+      document.getElementById(`qty-${itemId}`).innerText = count;
+      const card = document.getElementById(`card-${itemId}`);
+      
+      if (count > 0) {
+        card.classList.add("selected-card");
+      } else {
+        card.classList.remove("selected-card");
+      }
+
+      for (let j = 0; j < count; j++) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "items[]"; 
+        input.value = itemId;
+        hiddenContainer.appendChild(input);
+      }
+    });
+
+    document.getElementById("count").innerText = `${totalItems} / 15 items selected`;
+    document.getElementById("progressFill").style.width = `${(totalItems / maxItems) * 100}%`;
+    document.getElementById("submitBtn").disabled = totalItems === 0;
+  }
+
+  renderUI();
+</script>
+{% endblock %}
